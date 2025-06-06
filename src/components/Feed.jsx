@@ -1,6 +1,6 @@
 // components/Feed.jsx
 import React, { useEffect, useState, useCallback } from 'react';
-import { fetchAllHustles } from '../walletService'; // Import the new function
+import { fetchAllHustles } from './walletService'; // Import the new function
 import { useNavigate } from 'react-router-dom'; // For navigation
 
 const Feed = () => { // No need to pass getHustles as a prop now
