@@ -46,10 +46,20 @@ const HustleForm = () => {
       console.log("Transaction hash:", tx.hash);
 
       const receipt = await tx.wait();
-      setMessage(`Hustle submitted successfully! Transaction confirmed: ${receipt.transactionHash}`);
-      toast.success("Hustle submitted successfully!", { description: `Transaction confirmed: ${receipt.transactionHash.substring(0, 8)}...` });
-      console.log("Transaction receipt:", receipt);
-
+       // --- FIX START ---
+       let displayHash = "N/A"; // Default display value
+       if (receipt && receipt.transactionHash) { // Check if receipt and transactionHash exist
+         displayHash = `${receipt.transactionHash.substring(0, 8)}...`;
+         setMessage(`Hustle submitted successfully! Transaction confirmed: ${receipt.transactionHash}`);
+         toast.success("Hustle submitted successfully!", { description: `Transaction confirmed: ${displayHash}` });
+         console.log("Transaction receipt:", receipt);
+       } else {
+         // Handle cases where receipt or hash is missing but tx.wait() still resolved
+         setMessage("Hustle submitted, but transaction hash could not be retrieved.");
+         toast.success("Hustle submitted!", { description: "Transaction confirmed, but hash not found." });
+         console.warn("Transaction confirmed, but receipt or hash was undefined:", receipt);
+       }
+     
       // Clear the form
       setFullName('');
       setHustleType('');
