@@ -13,7 +13,7 @@ const Home = () => {
   return (
     <>
       <div className="container">
-        <h1 className="site-title">Proof of Hustle</h1>
+        <h1 className="site-title underline">Proof of Hustle</h1>
         <p>Prove you're building. Mint your hustle on-chain.</p>
         {/* Use the imported connectWallet function directly */}
         <button onClick={handleConnectWallet}>Connect Wallet</button>
