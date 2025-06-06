@@ -1,5 +1,6 @@
 // components/HustleForm.jsx
 import React, { useState, useEffect } from 'react';
+import './form.css';
 // If you want to use the contract directly, you'd export it from walletService.js:
 // import { getHustleContract } from '../walletService'; // Example if you export a getter
 
