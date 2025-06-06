@@ -1,20 +1,13 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 
 const HustleForm = ({ submitHustle }) => {
   const [fullName, setFullName] = useState('');
   const [hustleType, setHustleType] = useState('');
   const [description, setDescription] = useState('');
-  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      await submitHustle(fullName, hustleType, description);
-      navigate('/feed'); // 🔁 Redirect to Feed after mint
-    } catch (err) {
-      alert('Failed to mint: ' + err.message);
-    }
+    await submitHustle(fullName, hustleType, description);
   };
 
   return (
@@ -30,4 +23,4 @@ const HustleForm = ({ submitHustle }) => {
   );
 };
 
-export default HustleForm;
+export default HustleForm; 
