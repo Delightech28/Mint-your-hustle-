@@ -3,8 +3,7 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { connectWallet } from '../wallet'; // adjust path if needed
-
+import { connectWallet } from '.components/ethereum';
 const Home = () => {
   const navigate = useNavigate();
 
