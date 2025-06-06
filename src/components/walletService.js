@@ -1,5 +1,11 @@
 
-import { BrowserProvider, Contract } from 'ethers'; // Import BrowserProvider directly}
+
+
+
+// walletService.js
+
+import { BrowserProvider, Contract } from 'ethers'; // Import BrowserProvider and Contract
+
 const contractAddress = "0xA7011E842Ae2dD14C61DE899B56FE45dA584faa2";
 
 const contractABI = [
@@ -39,7 +45,8 @@ let provider;
 let signer;
 let hustleContract;
 
-export async function connectWallet() { // Export the function
+// Modified connectWallet to accept a navigate function for React Router
+export async function connectWallet(navigate) {
   if (window.ethereum) {
     try {
       // Request account access
@@ -48,17 +55,22 @@ export async function connectWallet() { // Export the function
 
       // Setup provider & signer
       provider = new BrowserProvider(window.ethereum);
-      signer = provider.getSigner();
+      signer = await provider.getSigner(); // <-- ADDED AWAIT HERE
 
       // Get network info
       const network = await provider.getNetwork();
-      if (network.chainId !== 43113) {
+      // Note: In ethers v6, chainId is a BigInt. Compare with BigInt literal for safety.
+      if (network.chainId !== 43113n) { // Compare with BigInt literal if network.chainId is BigInt
         try {
           // Try switching to Fuji
           await window.ethereum.request({
             method: 'wallet_switchEthereumChain',
             params: [{ chainId: '0xa869' }], // Fuji chainId in hex
           });
+          // After switching, re-instantiate provider and signer to reflect the new network
+          provider = new BrowserProvider(window.ethereum);
+          signer = await provider.getSigner(); // <-- ADDED AWAIT HERE
+
         } catch (switchError) {
           // If Fuji isn't added to MetaMask, try adding it
           if (switchError.code === 4902) {
@@ -77,6 +89,10 @@ export async function connectWallet() { // Export the function
                   blockExplorerUrls: ['https://testnet.snowtrace.io/']
                 }]
               });
+              // After adding, re-instantiate provider and signer
+              provider = new BrowserProvider(window.ethereum);
+              signer = await provider.getSigner(); // <-- ADDED AWAIT HERE
+
             } catch (addError) {
               console.error("Failed to add Fuji:", addError);
               alert("Could not add Fuji Testnet to MetaMask.");
@@ -94,8 +110,15 @@ export async function connectWallet() { // Export the function
       hustleContract = new Contract(contractAddress, contractABI, signer);
       window.hustleContract = hustleContract; // If you need it globally for debugging or specific use cases
 
-      // Redirect to form
-      window.location.href = "/mint-your-hustle";
+      // Redirect to form using the passed navigate function from React Router
+      if (navigate) {
+        navigate('/mint-your-hustle');
+      } else {
+        console.warn("Navigate function not provided to connectWallet. Cannot redirect using React Router.");
+        // Fallback if navigate is not available (e.g., direct call outside React component context)
+        // window.location.href = "/mint-your-hustle";
+      }
+
     } catch (error) {
       console.error("Connection error:", error);
       alert("Wallet connection failed. Check console.");
@@ -104,3 +127,4 @@ export async function connectWallet() { // Export the function
     alert("MetaMask not detected. Please install it.");
   }
 }
+
