@@ -66,13 +66,19 @@ export async function fetchAllHustles() {
   }
 }
 
-export async function connectWallet(navigate) {
+export async function connectWallet(setWalletAddress) {
   if (window.ethereum) {
     try {
       const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
       // alert("Wallet connected: " + accounts[0]); // Old alert
+      const walletAddress = accounts[0];
       toast.success(`Wallet connected: ${accounts[0]}`, { description: "You are now connected to the DApp." }); // Custom toast
 
+      if(setWalletAddress){
+        setWalletAddress(walletAddress);
+      }else{
+        console.warn("setWalletAddress function not provided. Cannot display wallet address");
+      }
       provider = new BrowserProvider(window.ethereum);
       signer = await provider.getSigner();
 
@@ -125,12 +131,6 @@ export async function connectWallet(navigate) {
 
       hustleContract = new Contract(contractAddress, contractABI, signer);
       window.hustleContract = hustleContract;
-
-      if (navigate) {
-        navigate('/mint-your-hustle');
-      } else {
-        console.warn("Navigate function not provided to connectWallet. Cannot redirect using React Router.");
-      }
 
     } catch (error) {
       console.error("Connection error:", error);

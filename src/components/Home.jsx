@@ -1,5 +1,5 @@
 // src/components/Home.jsx
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom'; // For navigation
 import { connectWallet } from './walletService'; // Your wallet connection function
 import { ArrowRight, Shield, Sparkles, Users } from 'lucide-react'; // Import new icons
@@ -9,10 +9,12 @@ import { ArrowRight, Shield, Sparkles, Users } from 'lucide-react'; // Import ne
 
 const Home = () => {
   const navigate = useNavigate();
+  const [walletAddress, setwalletAddress] = useState("");
 
   // Handler for connecting wallet and then navigating
-  const handleConnectWalletAndNavigate = async () => {
-    await connectWallet(navigate);
+  const handleConnectWallet = async () => {
+    await connectWallet(setwalletAddress);
+    
   };
 
   const handleMintYourHustle = () => {
@@ -23,6 +25,12 @@ const Home = () => {
     navigate('/feed'); // Navigate to your feed page
   };
 
+  useEffect(() => {
+    if(walletAddress){
+      console.log("Connected Wallet Address:", walletAddress);
+    }
+  }, [walletAddress]);
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-white to-gray-50 text-gray-800 flex flex-col font-sans relative overflow-hidden">
       {/* Subtle Background Blob (Optional, can be a div with absolute positioning) */}
@@ -33,12 +41,18 @@ const Home = () => {
       {/* Header */}
       <header className="flex justify-between items-center px-4 py-4 md:px-8 max-w-7xl mx-auto w-full z-10">
         <h1 className="text-xl md:text-2xl font-bold text-gray-900">Mint Your Hustle</h1>
-        <button
-          onClick={handleConnectWalletAndNavigate}
+        {walletAddress ? (
+          <div className='text-sm text-gray-600'>
+            Connected: {walletAddress.slice(0, 6)}...{walletAddress.substring(walletAddress.length - 4)}
+          </div>
+        ) : (
+             <button
+          onClick={handleConnectWallet}
           className="px-4 py-2 bg-purple-600 text-white rounded-full hover:bg-purple-700 transition-colors duration-300 shadow-lg font-semibold"
         >
           Connect
         </button>
+        )}
       </header>
 
       {/* Hero Section */}
