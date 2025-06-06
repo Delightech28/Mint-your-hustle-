@@ -1,6 +1,6 @@
 import React from 'react';
 import { connectWallet } from './walletService'; // Adjust the path as needed
-
+import './style.css';
 const Home = () => {
   return (
     <>
