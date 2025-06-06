@@ -1,8 +1,7 @@
 // components/HustleForm.jsx
 import React, { useState, useEffect } from 'react';
-import './form.css';
-// If you want to use the contract directly, you'd export it from walletService.js:
-// import { getHustleContract } from '../walletService'; // Example if you export a getter
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
+import { getHustleContractInstance } from '../walletService'; // Import the contract getter
 
 const HustleForm = () => {
   const [fullName, setFullName] = useState('');
@@ -10,19 +9,21 @@ const HustleForm = () => {
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
+  const navigate = useNavigate(); // Get the navigate function
 
-  // It's good practice to ensure the contract is available when the form mounts
-  // or handle cases where it might not be.
+  // Access the contract instance
+  const hustleContract = getHustleContractInstance();
+
   useEffect(() => {
-    if (!window.hustleContract) {
+    if (!hustleContract) {
       setMessage("Wallet not connected. Please go back to the home page and connect.");
     }
-  }, []);
+  }, [hustleContract]); // Dependency: re-check if contract becomes available
 
   const handleSubmit = async (e) => {
     e.preventDefault(); // Prevent default form submission reload
 
-    if (!window.hustleContract) {
+    if (!hustleContract) {
       setMessage("Wallet is not connected. Please connect your wallet first.");
       return;
     }
@@ -36,14 +37,12 @@ const HustleForm = () => {
     setMessage("Submitting hustle...");
 
     try {
-      // This is the line that will trigger Metamask for gas fees
-      const tx = await window.hustleContract.submitHustle(fullName, hustleType, description);
+      const tx = await hustleContract.submitHustle(fullName, hustleType, description);
 
       setMessage("Transaction sent! Waiting for confirmation...");
       console.log("Transaction hash:", tx.hash);
 
-      // Wait for the transaction to be mined
-      const receipt = await tx.wait(); // This will wait until the transaction is confirmed
+      const receipt = await tx.wait();
       setMessage(`Hustle submitted successfully! Transaction confirmed: ${receipt.transactionHash}`);
       console.log("Transaction receipt:", receipt);
 
@@ -52,9 +51,11 @@ const HustleForm = () => {
       setHustleType('');
       setDescription('');
 
+      // Redirect to the feed page after successful minting
+      navigate('/feed'); // Redirect to your feed page
+
     } catch (error) {
       console.error("Error submitting hustle:", error);
-      // Check for specific Metamask errors, e.g., user rejected transaction
       if (error.code === 4001) {
         setMessage("Transaction rejected by user.");
       } else {
@@ -108,4 +109,3 @@ const HustleForm = () => {
 };
 
 export default HustleForm;
-

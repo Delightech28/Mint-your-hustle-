@@ -1,7 +1,6 @@
 
 
 
-
 // walletService.js
 
 import { BrowserProvider, Contract } from 'ethers'; // Import BrowserProvider and Contract
@@ -45,7 +44,43 @@ let provider;
 let signer;
 let hustleContract;
 
-// Modified connectWallet to accept a navigate function for React Router
+// ----------------------------------------------------
+// ADD THE NEW CODE HERE
+// ----------------------------------------------------
+
+// Export a getter for the contract instance if needed elsewhere
+export const getHustleContractInstance = () => hustleContract;
+
+// New function to fetch hustles from the contract
+export async function fetchAllHustles() {
+  if (!hustleContract) {
+    console.error("Hustle contract not initialized. Connect wallet first.");
+    return [];
+  }
+  try {
+    const rawHustles = await hustleContract.getHustles();
+    // Map the raw data from the contract to a more usable format for your React component
+    const formattedHustles = rawHustles.map(hustle => ({
+      fullName: hustle.fullName,
+      hustleType: hustle.hustleType,
+      description: hustle.description,
+      submitter: hustle.submitter,
+      // If your contract had a timestamp, you'd add it here, e.g.:
+      // timestamp: Number(hustle.timestamp) // Assuming timestamp is BigInt in v6
+    }));
+    return formattedHustles;
+  } catch (error) {
+    console.error("Error fetching hustles:", error);
+    return [];
+  }
+}
+
+// ----------------------------------------------------
+// END OF NEW CODE ADDITION
+// ----------------------------------------------------
+
+
+// Your existing connectWallet function follows below:
 export async function connectWallet(navigate) {
   if (window.ethereum) {
     try {
@@ -55,11 +90,10 @@ export async function connectWallet(navigate) {
 
       // Setup provider & signer
       provider = new BrowserProvider(window.ethereum);
-      signer = await provider.getSigner(); // <-- ADDED AWAIT HERE
+      signer = await provider.getSigner();
 
       // Get network info
       const network = await provider.getNetwork();
-      // Note: In ethers v6, chainId is a BigInt. Compare with BigInt literal for safety.
       if (network.chainId !== 43113n) { // Compare with BigInt literal if network.chainId is BigInt
         try {
           // Try switching to Fuji
@@ -69,7 +103,7 @@ export async function connectWallet(navigate) {
           });
           // After switching, re-instantiate provider and signer to reflect the new network
           provider = new BrowserProvider(window.ethereum);
-          signer = await provider.getSigner(); // <-- ADDED AWAIT HERE
+          signer = await provider.getSigner();
 
         } catch (switchError) {
           // If Fuji isn't added to MetaMask, try adding it
@@ -91,7 +125,7 @@ export async function connectWallet(navigate) {
               });
               // After adding, re-instantiate provider and signer
               provider = new BrowserProvider(window.ethereum);
-              signer = await provider.getSigner(); // <-- ADDED AWAIT HERE
+              signer = await provider.getSigner();
 
             } catch (addError) {
               console.error("Failed to add Fuji:", addError);
@@ -115,8 +149,6 @@ export async function connectWallet(navigate) {
         navigate('/mint-your-hustle');
       } else {
         console.warn("Navigate function not provided to connectWallet. Cannot redirect using React Router.");
-        // Fallback if navigate is not available (e.g., direct call outside React component context)
-        // window.location.href = "/mint-your-hustle";
       }
 
     } catch (error) {
@@ -127,4 +159,3 @@ export async function connectWallet(navigate) {
     alert("MetaMask not detected. Please install it.");
   }
 }
-
