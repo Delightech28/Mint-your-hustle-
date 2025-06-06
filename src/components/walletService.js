@@ -4,7 +4,7 @@
 // walletService.js
 
 import { BrowserProvider, Contract } from 'ethers'; // Import BrowserProvider and Contract
-
+import { toast } from 'sonner'; // Import toast from sonner
 const contractAddress = "0xA7011E842Ae2dD14C61DE899B56FE45dA584faa2";
 
 const contractABI = [
@@ -44,14 +44,8 @@ let provider;
 let signer;
 let hustleContract;
 
-// ----------------------------------------------------
-// ADD THE NEW CODE HERE
-// ----------------------------------------------------
-
-// Export a getter for the contract instance if needed elsewhere
 export const getHustleContractInstance = () => hustleContract;
 
-// New function to fetch hustles from the contract
 export async function fetchAllHustles() {
   if (!hustleContract) {
     console.error("Hustle contract not initialized. Connect wallet first.");
@@ -59,14 +53,11 @@ export async function fetchAllHustles() {
   }
   try {
     const rawHustles = await hustleContract.getHustles();
-    // Map the raw data from the contract to a more usable format for your React component
     const formattedHustles = rawHustles.map(hustle => ({
       fullName: hustle.fullName,
       hustleType: hustle.hustleType,
       description: hustle.description,
       submitter: hustle.submitter,
-      // If your contract had a timestamp, you'd add it here, e.g.:
-      // timestamp: Number(hustle.timestamp) // Assuming timestamp is BigInt in v6
     }));
     return formattedHustles;
   } catch (error) {
@@ -75,38 +66,28 @@ export async function fetchAllHustles() {
   }
 }
 
-// ----------------------------------------------------
-// END OF NEW CODE ADDITION
-// ----------------------------------------------------
-
-
-// Your existing connectWallet function follows below:
 export async function connectWallet(navigate) {
   if (window.ethereum) {
     try {
-      // Request account access
       const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-      alert("Wallet connected: " + accounts[0]);
+      // alert("Wallet connected: " + accounts[0]); // Old alert
+      toast.success(`Wallet connected: ${accounts[0]}`, { description: "You are now connected to the DApp." }); // Custom toast
 
-      // Setup provider & signer
       provider = new BrowserProvider(window.ethereum);
       signer = await provider.getSigner();
 
-      // Get network info
       const network = await provider.getNetwork();
-      if (network.chainId !== 43113n) { // Compare with BigInt literal if network.chainId is BigInt
+      if (network.chainId !== 43113n) {
         try {
-          // Try switching to Fuji
           await window.ethereum.request({
             method: 'wallet_switchEthereumChain',
-            params: [{ chainId: '0xa869' }], // Fuji chainId in hex
+            params: [{ chainId: '0xa869' }],
           });
-          // After switching, re-instantiate provider and signer to reflect the new network
           provider = new BrowserProvider(window.ethereum);
           signer = await provider.getSigner();
+          toast.info("Switched to Avalanche Fuji C-Chain.", { description: "Please confirm in MetaMask." }); // Custom toast
 
         } catch (switchError) {
-          // If Fuji isn't added to MetaMask, try adding it
           if (switchError.code === 4902) {
             try {
               await window.ethereum.request({
@@ -123,28 +104,28 @@ export async function connectWallet(navigate) {
                   blockExplorerUrls: ['https://testnet.snowtrace.io/']
                 }]
               });
-              // After adding, re-instantiate provider and signer
               provider = new BrowserProvider(window.ethereum);
               signer = await provider.getSigner();
+              toast.info("Added Avalanche Fuji C-Chain to MetaMask.", { description: "Please switch to it." }); // Custom toast
 
             } catch (addError) {
               console.error("Failed to add Fuji:", addError);
-              alert("Could not add Fuji Testnet to MetaMask.");
+              // alert("Could not add Fuji Testnet to MetaMask."); // Old alert
+              toast.error("Could not add Fuji Testnet to MetaMask.", { description: addError.message }); // Custom toast
               return;
             }
           } else {
             console.error("Failed to switch to Fuji:", switchError);
-            alert("Please switch your MetaMask network to Avalanche Fuji Testnet (43113).");
+            // alert("Please switch your MetaMask network to Avalanche Fuji Testnet (43113)."); // Old alert
+            toast.error("Failed to switch network.", { description: "Please switch your MetaMask network to Avalanche Fuji Testnet (43113)." }); // Custom toast
             return;
           }
         }
       }
 
-      // Connect the contract
       hustleContract = new Contract(contractAddress, contractABI, signer);
-      window.hustleContract = hustleContract; // If you need it globally for debugging or specific use cases
+      window.hustleContract = hustleContract;
 
-      // Redirect to form using the passed navigate function from React Router
       if (navigate) {
         navigate('/mint-your-hustle');
       } else {
@@ -153,9 +134,11 @@ export async function connectWallet(navigate) {
 
     } catch (error) {
       console.error("Connection error:", error);
-      alert("Wallet connection failed. Check console.");
+      // alert("Wallet connection failed. Check console."); // Old alert
+      toast.error("Wallet connection failed.", { description: error.message || "Check console for details." }); // Custom toast
     }
   } else {
-    alert("MetaMask not detected. Please install it.");
+    // alert("MetaMask not detected. Please install it."); // Old alert
+    toast.warning("MetaMask not detected.", { description: "Please install the MetaMask browser extension to connect your wallet." }); // Custom toast
   }
 }

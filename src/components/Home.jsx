@@ -2,7 +2,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom'; // For navigation
 import { connectWallet } from './walletService'; // Your wallet connection function
-import { ArrowRight, Shield } from 'lucide-react'; // Import icons from lucide-react
+import { ArrowRight, Shield, Sparkles, Users } from 'lucide-react'; // Import new icons
 
 // Optional: You might have a global CSS file for base styles or custom utilities
 //import '../index.css'; // Or wherever your main CSS/Tailwind output is
@@ -12,16 +12,11 @@ const Home = () => {
 
   // Handler for connecting wallet and then navigating
   const handleConnectWalletAndNavigate = async () => {
-    // connectWallet now accepts the navigate function
     await connectWallet(navigate);
   };
 
   const handleMintYourHustle = () => {
-    // This button might either directly navigate to the form
-    // or trigger wallet connection if not already connected, then navigate.
-    // For simplicity, let's assume it navigates to the form directly.
-    // If you want it to trigger wallet connection first, call handleConnectWalletAndNavigate here.
-    navigate('/mint-your-hustle');
+    navigate('/mint-your-hustle'); // Navigate to your form page
   };
 
   const handleExploreFeed = () => {
@@ -32,6 +27,8 @@ const Home = () => {
     <div className="min-h-screen bg-gradient-to-br from-white to-gray-50 text-gray-800 flex flex-col font-sans relative overflow-hidden">
       {/* Subtle Background Blob (Optional, can be a div with absolute positioning) */}
       <div className="absolute top-0 right-0 w-80 h-80 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
+      <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div> {/* Another blob */}
+
 
       {/* Header */}
       <header className="flex justify-between items-center px-4 py-4 md:px-8 max-w-7xl mx-auto w-full z-10">
@@ -71,25 +68,54 @@ const Home = () => {
         </div>
       </main>
 
-      {/* Immutable Proof Section */}
-      <section className="flex flex-col items-center text-center px-4 py-12 md:py-24 bg-white rounded-xl shadow-inner mx-auto max-w-3xl mb-12 border border-gray-100 z-10">
-        <div className="mb-6">
-          <Shield className="w-16 h-16 text-purple-600" />
+      {/* Features Section Container */}
+      <section className="px-4 py-12 md:py-24 max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12 z-10">
+
+        {/* Immutable Proof Section */}
+        <div className="flex flex-col items-center text-center p-8 bg-white rounded-xl shadow-lg border border-gray-100">
+          <div className="mb-6 bg-purple-100 p-4 rounded-full"> {/* Added background to icon container */}
+            <Shield className="w-10 h-10 text-purple-600" /> {/* Adjusted icon size slightly */}
+          </div>
+          <h3 className="text-xl md:text-2xl font-bold mb-3 text-gray-900">Immutable Proof</h3>
+          <p className="text-base text-gray-600 max-w-xs">
+            Your projects are permanently recorded on the blockchain, creating an unalterable portfolio.
+          </p>
         </div>
-        <h3 className="text-3xl font-bold mb-4 text-gray-900">Immutable Proof</h3>
-        <p className="text-lg text-gray-600 max-w-xl">
-          Your projects are permanently recorded on the blockchain, creating an unalterable
-          portfolio.
-        </p>
+
+        {/* Discover Innovations Section */}
+        <div className="flex flex-col items-center text-center p-8 bg-white rounded-xl shadow-lg border border-gray-100">
+          <div className="mb-6 bg-blue-100 p-4 rounded-full">
+            <Sparkles className="w-10 h-10 text-blue-600" />
+          </div>
+          <h3 className="text-xl md:text-2xl font-bold mb-3 text-gray-900">Discover Innovations</h3>
+          <p className="text-base text-gray-600 max-w-xs">
+            Explore cutting-edge projects from builders worldwide in our curated feed.
+          </p>
+        </div>
+
+        {/* Connect with Builders Section */}
+        <div className="flex flex-col items-center text-center p-8 bg-white rounded-xl shadow-lg border border-gray-100">
+          <div className="mb-6 bg-green-100 p-4 rounded-full">
+            <Users className="w-10 h-10 text-green-600" />
+          </div>
+          <h3 className="text-xl md:text-2xl font-bold mb-3 text-gray-900">Connect with Builders</h3>
+          <p className="text-base text-gray-600 max-w-xs">
+            Engage with fellow creators through likes, shares, and building connections.
+          </p>
+        </div>
+
       </section>
 
       {/* Footer (Optional, can be added if needed) */}
-      {/* <footer className="py-4 text-center text-gray-500 text-sm">
+      <footer className="py-4 text-center text-gray-500 text-sm">
         &copy; {new Date().getFullYear()} Proof of Hustle. All rights reserved.
-      </footer> */}
+      </footer>
     </div>
   );
 };
 
 export default Home;
+
+
+
 
