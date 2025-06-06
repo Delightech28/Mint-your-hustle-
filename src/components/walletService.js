@@ -1,6 +1,5 @@
 
-import { ethers } from 'ethers'; // Import ethers directly
-
+import { BrowserProvider, Contract } from 'ethers'; // Import BrowserProvider directly}
 const contractAddress = "0xA7011E842Ae2dD14C61DE899B56FE45dA584faa2";
 
 const contractABI = [
@@ -48,7 +47,7 @@ export async function connectWallet() { // Export the function
       alert("Wallet connected: " + accounts[0]);
 
       // Setup provider & signer
-      provider = new ethers.providers.Web3Provider(window.ethereum);
+      provider = new BrowserProvider(window.ethereum);
       signer = provider.getSigner();
 
       // Get network info
@@ -92,11 +91,11 @@ export async function connectWallet() { // Export the function
       }
 
       // Connect the contract
-      hustleContract = new ethers.Contract(contractAddress, contractABI, signer);
+      hustleContract = new Contract(contractAddress, contractABI, signer);
       window.hustleContract = hustleContract; // If you need it globally for debugging or specific use cases
 
       // Redirect to form
-      window.location.href = "form.html";
+      window.location.href = "/mint-your-hustle";
     } catch (error) {
       console.error("Connection error:", error);
       alert("Wallet connection failed. Check console.");
