@@ -1,7 +1,7 @@
 // components/HustleForm.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate
-import { getHustleContractInstance } from '../walletService'; // Import the contract getter
+import { getHustleContractInstance } from './walletService'; // Import the contract getter
 
 const HustleForm = () => {
   const [fullName, setFullName] = useState('');
