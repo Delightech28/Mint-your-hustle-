@@ -1,20 +1,18 @@
 // src/components/Home.jsx
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // For navigation
-import { connectWallet } from './walletService'; // Your wallet connection function
-import { ArrowRight, Shield, Sparkles, Users } from 'lucide-react'; // Import new icons
-
-// Optional: You might have a global CSS file for base styles or custom utilities
-//import '../index.css'; // Or wherever your main CSS/Tailwind output is
+import React, { useEffect } from 'react'; // Removed useState
+import { useNavigate } from 'react-router-dom';
+// import { connectWallet } from './walletService'; // REMOVED: This import is no longer needed here
+import { ArrowRight, Shield, Sparkles, Users } from 'lucide-react';
+import { useWallet } from '../context/WalletContext';
+// import '../index.css'; // Or wherever your main CSS/Tailwind output is
 
 const Home = () => {
   const navigate = useNavigate();
-  const [walletAddress, setwalletAddress] = useState("");
+  const { walletAddress, connectWallet } = useWallet(); // Get from context
 
-  // Handler for connecting wallet and then navigating
+  // Handler for connecting wallet (now uses context's connectWallet)
   const handleConnectWallet = async () => {
-    await connectWallet(setwalletAddress);
-    
+    await connectWallet();
   };
 
   const handleMintYourHustle = () => {
@@ -26,32 +24,31 @@ const Home = () => {
   };
 
   useEffect(() => {
-    if(walletAddress){
+    if (walletAddress) {
       console.log("Connected Wallet Address:", walletAddress);
     }
   }, [walletAddress]);
-  
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-white to-gray-50 text-gray-800 flex flex-col font-sans relative overflow-hidden">
       {/* Subtle Background Blob (Optional, can be a div with absolute positioning) */}
       <div className="absolute top-0 right-0 w-80 h-80 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
       <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div> {/* Another blob */}
 
-
       {/* Header */}
       <header className="flex justify-between items-center px-4 py-4 md:px-8 max-w-7xl mx-auto w-full z-10">
         <h1 className="text-xl md:text-2xl font-bold text-gray-900">Mint Your Hustle</h1>
         {walletAddress ? (
-          <div className='text-sm text-gray-600'>
-            Connected: {walletAddress.slice(0, 6)}...{walletAddress.substring(walletAddress.length - 4)}
+          <div className="text-sm text-gray-600 px-4 py-2 bg-gray-100 rounded-full border border-gray-200">
+            Connected: <span className="font-mono text-gray-800">{walletAddress.substring(0, 6)}...{walletAddress.substring(walletAddress.length - 4)}</span>
           </div>
         ) : (
-             <button
-          onClick={handleConnectWallet}
-          className="px-4 py-2 bg-purple-600 text-white rounded-full hover:bg-purple-700 transition-colors duration-300 shadow-lg font-semibold"
-        >
-          Connect
-        </button>
+          <button
+            onClick={handleConnectWallet}
+            className="px-4 py-2 bg-purple-600 text-white rounded-full hover:bg-purple-700 transition-colors duration-300 shadow-lg font-semibold"
+          >
+            Connect
+          </button>
         )}
       </header>
 
@@ -87,8 +84,8 @@ const Home = () => {
 
         {/* Immutable Proof Section */}
         <div className="flex flex-col items-center text-center p-8 bg-white rounded-xl shadow-lg border border-gray-100">
-          <div className="mb-6 bg-purple-100 p-4 rounded-full"> {/* Added background to icon container */}
-            <Shield className="w-10 h-10 text-purple-600" /> {/* Adjusted icon size slightly */}
+          <div className="mb-6 bg-purple-100 p-4 rounded-full">
+            <Shield className="w-10 h-10 text-purple-600" />
           </div>
           <h3 className="text-xl md:text-2xl font-bold mb-3 text-gray-900">Immutable Proof</h3>
           <p className="text-base text-gray-600 max-w-xs">
@@ -129,7 +126,3 @@ const Home = () => {
 };
 
 export default Home;
-
-
-
-

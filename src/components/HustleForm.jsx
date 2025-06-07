@@ -1,8 +1,9 @@
 // src/components/HustleForm.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate
-import { getHustleContractInstance } from './walletService'; // Import the contract getter
+// REMOVE THIS LINE: import { getHustleContractInstance } from './walletService'; // No longer needed
 import { toast } from 'sonner'; // Import toast for notifications
+import { useWallet } from '../context/WalletContext';
 
 const HustleForm = () => {
   const [fullName, setFullName] = useState('');
@@ -11,15 +12,14 @@ const HustleForm = () => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(''); // Still useful for internal form messages
   const navigate = useNavigate();
-
-  const hustleContract = getHustleContractInstance();
+  const { hustleContract } = useWallet(); // Get hustleContract and walletAddress from context
 
   useEffect(() => {
     if (!hustleContract) {
       setMessage("Wallet not connected. Please go back to the home page and connect.");
       toast.error("Wallet not connected!", { description: "Please connect your wallet on the home page." });
     }
-  }, [hustleContract]);
+  }, [hustleContract]); // Dependency is on the context's hustleContract
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -46,20 +46,21 @@ const HustleForm = () => {
       console.log("Transaction hash:", tx.hash);
 
       const receipt = await tx.wait();
-       // --- FIX START ---
-       let displayHash = "N/A"; // Default display value
-       if (receipt && receipt.transactionHash) { // Check if receipt and transactionHash exist
-         displayHash = `${receipt.transactionHash.substring(0, 8)}...`;
-         setMessage(`Hustle submitted successfully! Transaction confirmed: ${receipt.transactionHash}`);
-         toast.success("Hustle submitted successfully!", { description: `Transaction confirmed: ${displayHash}` });
-         console.log("Transaction receipt:", receipt);
-       } else {
-         // Handle cases where receipt or hash is missing but tx.wait() still resolved
-         setMessage("Hustle submitted, but transaction hash could not be retrieved.");
-         toast.success("Hustle submitted!", { description: "Transaction confirmed, but hash not found." });
-         console.warn("Transaction confirmed, but receipt or hash was undefined:", receipt);
-       }
-     
+      // --- FIX START (Already added in previous step, confirming it's there) ---
+      let displayHash = "N/A"; // Default display value
+      if (receipt && receipt.transactionHash) { // Check if receipt and transactionHash exist
+        displayHash = `${receipt.transactionHash.substring(0, 8)}...`;
+        setMessage(`Hustle submitted successfully! Transaction confirmed: ${receipt.transactionHash}`);
+        toast.success("Hustle submitted successfully!", { description: `Transaction confirmed: ${displayHash}` });
+        console.log("Transaction receipt:", receipt);
+      } else {
+        // Handle cases where receipt or hash is missing but tx.wait() still resolved
+        setMessage("Hustle submitted, but transaction hash could not be retrieved.");
+        toast.success("Hustle submitted!", { description: "Transaction confirmed, but hash not found." });
+        console.warn("Transaction confirmed, but receipt or hash was undefined:", receipt);
+      }
+      // --- FIX END ---
+
       // Clear the form
       setFullName('');
       setHustleType('');

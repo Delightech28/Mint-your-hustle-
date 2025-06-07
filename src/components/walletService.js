@@ -1,10 +1,8 @@
-
-
-
 // walletService.js
 
-import { BrowserProvider, Contract } from 'ethers'; // Import BrowserProvider and Contract
-import { toast } from 'sonner'; // Import toast from sonner
+import { BrowserProvider, Contract } from 'ethers';
+import { toast } from 'sonner';
+
 const contractAddress = "0xA7011E842Ae2dD14C61DE899B56FE45dA584faa2";
 
 const contractABI = [
@@ -42,9 +40,9 @@ const contractABI = [
 
 let provider;
 let signer;
-let hustleContract;
+let hustleContract; // This global variable will be set here.
 
-export const getHustleContractInstance = () => hustleContract;
+export const getHustleContractInstance = () => hustleContract; // Still useful for fetchAllHustles
 
 export async function fetchAllHustles() {
   if (!hustleContract) {
@@ -66,32 +64,27 @@ export async function fetchAllHustles() {
   }
 }
 
-export async function connectWallet(setWalletAddress) {
+export async function connectWallet(callback) { // Accepts the callback
   if (window.ethereum) {
     try {
       const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-      // alert("Wallet connected: " + accounts[0]); // Old alert
       const walletAddress = accounts[0];
-      toast.success(`Wallet connected: ${accounts[0]}`, { description: "You are now connected to the DApp." }); // Custom toast
+      toast.success(`Wallet connected: ${walletAddress.substring(0, 6)}...${walletAddress.substring(walletAddress.length - 4)}`, { description: "You are now connected to the DApp." });
 
-      if(setWalletAddress){
-        setWalletAddress(walletAddress);
-      }else{
-        console.warn("setWalletAddress function not provided. Cannot display wallet address");
-      }
       provider = new BrowserProvider(window.ethereum);
       signer = await provider.getSigner();
 
       const network = await provider.getNetwork();
-      if (network.chainId !== 43113n) {
+      if (network.chainId !== 43113n) { // Check for Fuji Testnet (43113)
         try {
           await window.ethereum.request({
             method: 'wallet_switchEthereumChain',
-            params: [{ chainId: '0xa869' }],
+            params: [{ chainId: '0xa869' }], // Hex for 43113
           });
+          // Re-initialize provider and signer after network switch
           provider = new BrowserProvider(window.ethereum);
           signer = await provider.getSigner();
-          toast.info("Switched to Avalanche Fuji C-Chain.", { description: "Please confirm in MetaMask." }); // Custom toast
+          toast.info("Switched to Avalanche Fuji C-Chain.", { description: "Please confirm in MetaMask." });
 
         } catch (switchError) {
           if (switchError.code === 4902) {
@@ -110,35 +103,41 @@ export async function connectWallet(setWalletAddress) {
                   blockExplorerUrls: ['https://testnet.snowtrace.io/']
                 }]
               });
+              // Re-initialize provider and signer after adding chain
               provider = new BrowserProvider(window.ethereum);
               signer = await provider.getSigner();
-              toast.info("Added Avalanche Fuji C-Chain to MetaMask.", { description: "Please switch to it." }); // Custom toast
+              toast.info("Added Avalanche Fuji C-Chain to MetaMask.", { description: "Please switch to it." });
 
             } catch (addError) {
               console.error("Failed to add Fuji:", addError);
-              // alert("Could not add Fuji Testnet to MetaMask."); // Old alert
-              toast.error("Could not add Fuji Testnet to MetaMask.", { description: addError.message }); // Custom toast
+              toast.error("Could not add Fuji Testnet to MetaMask.", { description: addError.message });
+              if (callback) callback(null, null); // Ensure context state is cleared on failure
               return;
             }
           } else {
             console.error("Failed to switch to Fuji:", switchError);
-            // alert("Please switch your MetaMask network to Avalanche Fuji Testnet (43113)."); // Old alert
-            toast.error("Failed to switch network.", { description: "Please switch your MetaMask network to Avalanche Fuji Testnet (43113)." }); // Custom toast
+            toast.error("Failed to switch network.", { description: "Please switch your MetaMask network to Avalanche Fuji Testnet (43113)." });
+            if (callback) callback(null, null); // Ensure context state is cleared on failure
             return;
           }
         }
       }
 
+      // Instantiate the contract with the signer
       hustleContract = new Contract(contractAddress, contractABI, signer);
-      window.hustleContract = hustleContract;
+      
+      // IMPORTANT: Call the callback to update the WalletContext state
+      if (callback) {
+        callback(walletAddress, hustleContract);
+      }
 
     } catch (error) {
       console.error("Connection error:", error);
-      // alert("Wallet connection failed. Check console."); // Old alert
-      toast.error("Wallet connection failed.", { description: error.message || "Check console for details." }); // Custom toast
+      toast.error("Wallet connection failed.", { description: error.message || "Check console for details." });
+      if (callback) callback(null, null); // Clear state if connection fails
     }
   } else {
-    // alert("MetaMask not detected. Please install it."); // Old alert
-    toast.warning("MetaMask not detected.", { description: "Please install the MetaMask browser extension to connect your wallet." }); // Custom toast
+    toast.warning("MetaMask not detected.", { description: "Please install the MetaMask browser extension to connect your wallet." });
+    if (callback) callback(null, null); // Clear state if MetaMask not detected
   }
 }
